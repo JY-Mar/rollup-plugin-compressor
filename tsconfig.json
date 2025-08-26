@@ -8,7 +8,7 @@
     "esModuleInterop": true,
     "outDir": "dist",
     "module": "commonjs",
-    "lib": ["ESNext", "DOM"],
+    "lib": ["ESNext"],
     "sourceMap": true
   },
   "include": ["./src"],
