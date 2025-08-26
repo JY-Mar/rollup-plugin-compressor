@@ -100,20 +100,6 @@ export default function compressorBuild(options: CompressOptions | undefined = d
       //2. 删除 目录下 指定的扩展名 文件
       deleteDirFile(rootPath, type)
     },
-    // rollup-plugin-compression
-    closeBundle1() {
-      console.log('closeBundle')
-      compressing.zip
-        .compressDir(buildPath, `${targetName}.${type}`, { ignoreBase: ignoreBase })
-        .then((res: any) => {
-          console.log('compress completed ~')
-          // console.log(chalk.cyan(`compress-${sourceName}:  ${sourceName} compress completed!`));
-        })
-        .catch((err: any) => {
-          // console.log(chalk.cyan(`compress error ~`));
-        })
-    },
-    // rollup-plugin-compress-dist
     closeBundle() {
       console.log('closeBundle')
       chalk.bgBlue(`buildPath: ${buildPath}`)
