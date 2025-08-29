@@ -33,3 +33,7 @@ A plugin for rollup or vite to compress the bundle directory which supports `.zi
   });
   
   ```
+
+## Latest Update
+
+support `require`, `import`

@@ -83,7 +83,7 @@ function validExtAndType(targetPath: string, type: string): boolean {
   return targetPath && type && new RegExp(`\.+\\.${ExtnameType[type]}\$`).test(targetPath)
 }
 
-export default function compressorBuild(options: CompressOptions | undefined = defaultOption) {
+function compressorBuild(options: CompressOptions | undefined = defaultOption) {
   const sourceName = options?.sourceName ?? defaultOption.sourceName
   const targetName = options?.targetName ?? defaultOption.targetName
   let type = options?.type ?? defaultOption.type
@@ -127,3 +127,5 @@ export default function compressorBuild(options: CompressOptions | undefined = d
     }
   }
 }
+
+export default compressorBuild

@@ -1,3 +1,6 @@
+dist/rollup.config.dev.js
+dist/vite.config.js
+
 node_modules/
 src/
 __test__/
@@ -9,8 +12,6 @@ __test__/
 .prettierrc.yaml
 
 rollup.config.*
-vite.config.*
-vitest.config.*
 
 tsconfig.json
 tsconfig.node.json

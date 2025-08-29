@@ -1,25 +1,51 @@
 {
   "name": "rollup-plugin-compressor",
-  "version": "1.0.0",
-  "description": "",
-  "main": "dist/index.js",
+  "version": "1.0.1",
+  "description": "Compress dist folder",
+  "type": "module",
+  "main": "dist/libs.umd.js",
+  "module": "dist/libs.es.js",
+  "browser": "dist/libs.umd.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "*.d.ts"
+  ],
+  "exports": {
+    ".": {
+      "require": "./dist/libs.umd.js",
+      "import": "./dist/libs.es.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/JY-Mar/rollup-plugin-compressor.git"
   },
   "scripts": {
     "dev": "tsc -w -p .",
-    "build": "rimraf dist && tsc -p . && npm link"
+    "tsc:build": "rimraf dist && tsc -p . && npm link",
+    "rollup:build": "rollup -c"
   },
   "keywords": [
-    "vite",
+    "rollup",
     "rollup-plugin",
-    "compress",
+    "compressor",
     "scientificat1995"
   ],
   "author": "",
   "license": "ISC",
-  "devDependencies": {},
+  "devDependencies": {
+    "@rollup/plugin-alias": "^5.1.0",
+    "@rollup/plugin-commonjs": "^26.0.1",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-strip": "^3.0.4",
+    "@rollup/plugin-terser": "^0.4.4",
+    "rollup": "^4.21.1",
+    "rollup-plugin-dts": "^6.1.1",
+    "rollup-plugin-esbuild": "^6.1.1"
+  },
   "dependencies": {
     "@types/node": "^17.0.8",
     "chalk": "^4.1.2",
