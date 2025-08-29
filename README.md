@@ -1,6 +1,7 @@
 A plugin for rollup or vite to compress the bundle directory which supports `.zip` `.tar` `.tgz` formats.
 
 > Forked from: https://github.com/lourain/rollup-plugin-compress-dist
+> 
 > And referred to: https://gitee.com/codercjx/rollup-plugin-compression
 
 ## Usage
