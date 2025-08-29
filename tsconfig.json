@@ -4,9 +4,10 @@
     "moduleResolution": "Node",
     "strict": false,
     "declaration": true,
+    "declarationDir": "dist",
     "noUnusedLocals": true,
     "esModuleInterop": true,
-    "outDir": "dist",
+    "outDir": "dist/es",
     "module": "ESNext",
     "lib": ["ESNext"],
     "sourceMap": true
