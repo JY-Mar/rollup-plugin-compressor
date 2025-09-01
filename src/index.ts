@@ -115,7 +115,8 @@ function compressorBuild(options: CompressOptions | undefined = defaultOption) {
       const sourceStream = new compressing[type].Stream()
 
       destStream.on('finish', () => {
-        console.log(chalk.cyan(`compressor:  ${sourceName} compress completed!`))
+        console.log(chalk.cyan(`✨[rollup-plugin-compressor]: ${sourceName} compress completed: `))
+        console.log(chalk.hex('#757575')(path.resolve(rootPath, `${basename}.${extname}`)))
       })
 
       destStream.on('error', (err) => {
