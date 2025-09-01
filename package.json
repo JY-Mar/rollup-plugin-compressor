@@ -1,6 +1,6 @@
 {
   "name": "rollup-plugin-compressor",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Compress dist folder",
   "type": "module",
   "main": "dist/index.cjs.js",
