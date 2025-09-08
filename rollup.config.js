@@ -1,3 +1,4 @@
+import path from 'path'
 import typescript2 from 'rollup-plugin-typescript2'
 import resolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
@@ -8,23 +9,26 @@ import alias from '@rollup/plugin-alias'
 
 export default [
   {
-    input: 'src/index.ts',
+    input: path.join('src', 'index.ts'),
     output: [
+      // ESModule
       {
-        file: 'dist/index.esm.js',
+        file: path.join('dist', 'index.esm.js'),
         format: 'esm',
-        sourcemap: true
+        sourcemap: false
       },
+      // CommonJS
       {
-        file: 'dist/index.cjs.js',
+        file: path.join('dist', 'index.cjs.js'),
         format: 'cjs',
-        sourcemap: true
+        sourcemap: false
       },
+      // Browser
       {
-        file: 'dist/index.umd.js',
+        file: path.join('dist', 'index.umd.js'),
         format: 'umd',
         name: 'index.umd', // UMD 需要一个全局变量名
-        sourcemap: true
+        sourcemap: false
       }
     ],
     plugins: [

@@ -1,132 +1,72 @@
-// Forked from: https://github.com/lourain/rollup-plugin-compress-dist
-// And referred to: https://gitee.com/codercjx/rollup-plugin-compression
-
-import { cwd } from 'process'
 import path from 'path'
 import compressing from 'compressing'
 import chalk from 'chalk'
 import fs from 'fs'
+import type { Plugin } from 'rollup'
+import { defaultOption, deleteDir, deleteDirFile, isTypeMatchExt, resolveOption, validItem, type CompressOptions, type CompressType, type ResolvedCompressOption } from './utils'
 
-enum ExtnameType {
-  zip = 'zip',
-  tar = 'tar',
-  tgz = 'tar.gz'
-}
-const ExtnameTypeList = Object.keys(ExtnameType) as (keyof typeof ExtnameType)[]
-type CompressType = keyof typeof ExtnameType
-
-export interface CompressOptions<Type extends CompressType = CompressType> {
-  sourceName?: string
-  type: Type
-  targetName?: TargetName<Type>
-  /**
-   * 默认打包源文件夹本身,配置为 true 则只打包文件夹内文件
-   */
-  ignoreBase?: boolean
-}
-type TargetName<T> = T extends 'zip' | 'tar' ? string | `${string}.${T}` : T extends 'tgz' ? string | `${string}.tar.gz` : never
-
-const defaultOption: CompressOptions<'tgz'> = {
-  type: 'tgz',
-  sourceName: 'dist',
-  targetName: 'dist.tar.gz',
-  ignoreBase: false
-}
+export type { CompressOptions } from './utils'
 
 /**
- * 删除 目录 及 目录中的所有 目录和文件
+ * rollup plugins
+ */
+const queue: ResolvedCompressOption[] = []
+
+/**
+ * return Rollup plugin Object
+ * @param        {CompressOptions} options
  * @return       {*}
  */
-function deleteDir(targetPath: string): void {
-  // 1. 判断 路径是否存在
-  if (!targetPath) return
-  if (!fs.existsSync(targetPath)) return
-  // 2. 获取该路径下所有目录名和文件名
-  const files = fs.readdirSync(targetPath)
-  files.forEach((file) => {
-    // 3. 拼接 目录下的目录路径 和 文件路径
-    const curPath = path.resolve(targetPath, file)
-    // 4. 判断是否 是目录
-    if (fs.statSync(curPath).isDirectory()) {
-      // 是目录  递归删除里面的 文件
-      deleteDir(curPath)
-    } else {
-      // 是文件 删除
-      fs.unlinkSync(curPath)
+function compressor(options: CompressOptions[] | CompressOptions<CompressType | CompressType[]> | undefined = defaultOption): Plugin {
+  if (typeof options === 'object' && options) {
+    if (Object.prototype.toString.call(options) === '[object Object]') {
+      queue.push(...resolveOption(options as CompressOptions))
+    } else if (options instanceof Array) {
+      options.forEach((opt) => {
+        typeof opt === 'object' && Object.prototype.toString.call(opt) === '[object Object]' && queue.push(...resolveOption(opt as CompressOptions))
+      })
     }
-  })
-  // 删除 目录
-  fs.rmdirSync(targetPath)
-}
-
-function deleteDirFile(targetPath: string, type: CompressType = defaultOption.type): void {
-  if (!targetPath) return
-  const rootPathFiles = fs.readdirSync(targetPath)
-  // console.log("获取==根路径下文件", rootPathFiles);
-  rootPathFiles.forEach((file) => {
-    const currentPath = path.resolve(targetPath, file)
-    // 判断是否是目录
-    if (!fs.statSync(currentPath).isDirectory()) {
-      // 不是目录 说明是文件
-      // 获取文件扩展名
-      const extname = path.extname(file)
-      const _type = (type === 'tgz' ? 'gz' : type) ?? defaultOption.type
-      if (extname === `.${_type}`) {
-        // 判断是否 是 打包的文件  是 就删除文件
-        fs.unlinkSync(currentPath)
-      }
-    }
-    // console.log("根路劲下目录和文件", currentPath);
-  })
-}
-function validExtAndType(targetPath: string, type: string): boolean {
-  return targetPath && type && new RegExp(`\.+\\.${ExtnameType[type]}\$`).test(targetPath)
-}
-
-function compressorBuild(options: CompressOptions | undefined = defaultOption) {
-  const sourceName = options?.sourceName ?? defaultOption.sourceName
-  const targetName = options?.targetName ?? defaultOption.targetName
-  let type = options?.type ?? defaultOption.type
-  type = ExtnameTypeList.indexOf(type) > -1 ? type : defaultOption.type
-  const ignoreBase = options?.ignoreBase ?? defaultOption.ignoreBase
-  const rootPath = cwd()
-  const buildPath = path.resolve(rootPath, sourceName)
+  }
 
   return {
-    name: 'compressor',
+    name: 'Compressor',
     buildStart() {
-      //1. 删除 build 构建目录
-      deleteDir(buildPath)
-      //2. 删除 目录下 指定的扩展名 文件
-      deleteDirFile(rootPath, type)
+      queue.forEach((que) => {
+        if (validItem(que?.pkgPath) && validItem(que?.cwdPath) && validItem(que?.type)) {
+          //1. Deletes packaged directory, default `dist`
+          deleteDir(que.pkgPath)
+          //2. Deletes all files with the specified extension from the `cwdPath`.
+          deleteDirFile(que.cwdPath, que.type)
+        }
+      })
     },
     closeBundle() {
-      console.log('closeBundle')
-      chalk.bgBlue(`buildPath: ${buildPath}`)
-      const extname = ExtnameType[type]
-      let basename: string
-      if (validExtAndType(targetName, type)) {
-        basename = targetName.substring(0, targetName.indexOf(`.${extname}`))
-      } else {
-        basename = targetName
-      }
+      queue.forEach((que, queIndex) => {
+        if (validItem(que.sourceName) && validItem(que.targetName) && validItem(que.type) && validItem(que.extname) && validItem(que.pkgPath) && validItem(que.cwdPath) && validItem(que.ignoreBase)) {
+          let basename: string
+          if (isTypeMatchExt(que.targetName, que.type)) {
+            basename = que.targetName.substring(0, que.targetName.indexOf(`.${que.extname}`))
+          } else {
+            basename = que.targetName
+          }
+          const destStream = fs.createWriteStream(path.resolve(que.cwdPath, `${basename}.${que.extname}`))
+          const sourceStream = new compressing[que.type].Stream()
 
-      const destStream = fs.createWriteStream(path.resolve(rootPath, `${basename}.${extname}`))
-      const sourceStream = new compressing[type].Stream()
+          destStream.on('finish', () => {
+            console.log(chalk.cyan(`✨[rollup-plugin-compressor#${queIndex + 1}]: ${que.sourceName} compress completed: `))
+            console.log(chalk.hex('#757575')(path.resolve(que.cwdPath, `${basename}.${que.extname}`)))
+          })
+          destStream.on('error', (err) => {
+            console.log(chalk.hex('#e74856')(`‼️[rollup-plugin-compressor#${queIndex + 1}]: ${que.sourceName} compress failed`))
+            throw err
+          })
 
-      destStream.on('finish', () => {
-        console.log(chalk.cyan(`✨[rollup-plugin-compressor]: ${sourceName} compress completed: `))
-        console.log(chalk.hex('#757575')(path.resolve(rootPath, `${basename}.${extname}`)))
+          sourceStream.addEntry(que.pkgPath, { ignoreBase: que.ignoreBase })
+          sourceStream.pipe(destStream)
+        }
       })
-
-      destStream.on('error', (err) => {
-        throw err
-      })
-
-      sourceStream.addEntry(buildPath, { ignoreBase: ignoreBase })
-      sourceStream.pipe(destStream)
     }
   }
 }
 
-export default compressorBuild
+export default compressor
