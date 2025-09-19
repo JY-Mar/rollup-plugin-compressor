@@ -8,16 +8,16 @@ import { defaultOption, deleteDir, deleteDirFile, isTypeMatchExt, resolveOption,
 export type { CompressOptions } from './utils'
 
 /**
- * rollup plugins
- */
-const queue: ResolvedCompressOption[] = []
-
-/**
  * return Rollup plugin Object
  * @param        {CompressOptions} options
  * @return       {*}
  */
 function compressor(options: CompressOptions[] | CompressOptions<CompressType | CompressType[]> | undefined = defaultOption): Plugin {
+  /**
+   * rollup plugins
+   */
+  const queue: ResolvedCompressOption[] = []
+
   if (typeof options === 'object' && options) {
     if (Object.prototype.toString.call(options) === '[object Object]') {
       queue.push(...resolveOption(options as CompressOptions))
